@@ -142,24 +142,25 @@ contract ERC223 {
 
 
 /**
- * @title DataForcesCoin
+ * @title DataForcesCoinDev
  * @author go-hiroaki & chokurei
- * @dev DataForcesCoin is an ERC223 Token with ERC20 functions and events
+ * @dev DataForcesCoinDev is an ERC223 Token with ERC20 functions and events
  *      Fully backward compatible with ERC20
  */
 
-contract DataForcesCoin is ERC223, Ownable {
+contract DataForcesCoinDev is ERC223, Ownable {
     using SafeMath for uint256;
 
-    string public name = "DataForcesCoin";
-    string public symbol = "DFC";
+    string public name = "DataForcesCoinDev";
+    string public symbol = "DFCD";
     uint8 public decimals = 18;
     uint256 public totalSupply = 1e8 * 1e18;
     bool public mintingFinished = false;
 
-    address public founder = _founder;
-    address public officerA = _a;
-    address public officerB = _b;
+    // dev address
+    address public founder = 0x068d420836F9c766A775Dc5DB2d3E5116B07556b;
+    address public officerA = 0x32bdF9dE3184869fF9dEDBb50653dD826403b885;
+    address public officerB = 0x6EF6FEda2CBeF4f4C27102D95B3fD56225c1E3af;
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping (address => uint256)) public allowance;
@@ -175,7 +176,7 @@ contract DataForcesCoin is ERC223, Ownable {
     /**
      * @dev Constructor is called only once and can not be called again
      */
-    function DataForcesCoin() public {
+    function DataForcesCoinDev() public {
         owner = founder;
         // initial distribution
         balanceOf[founder] = totalSupply.mul(80).div(100);
