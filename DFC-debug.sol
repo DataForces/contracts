@@ -167,8 +167,8 @@ contract DataForcesCoinDev is ERC223, Ownable {
     mapping(address => bool) public frozenAccount;
 
     event FrozenFunds(address indexed target, bool frozen);
-    event Burn(address indexed from, uint256 amount);
-    event Mint(address indexed to, uint256 amount);
+    event Burn(address indexed from, uint256 _amount);
+    event Mint(address indexed to, uint256 _amount);
     event MintFinished();
 
 
@@ -312,7 +312,7 @@ contract DataForcesCoinDev is ERC223, Ownable {
      *      Added due to backwards compatibility with ERC20
      * @param _from address The address which you want to send tokens from
      * @param _to address The address which you want to transfer to
-     * @param _value uint256 the amount of tokens to be transferred
+     * @param _value uint256 the _amount of tokens to be transferred
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         require(_to != address(0)
@@ -333,7 +333,7 @@ contract DataForcesCoinDev is ERC223, Ownable {
      * @dev Allows _spender to spend no more than _value tokens in your behalf
      *      Added due to backwards compatibility with ERC20
      * @param _spender The address authorized to spend
-     * @param _value the max amount they can spend
+     * @param _value the max _amount they can spend
      */
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowance[msg.sender][_spender] = _value;
@@ -342,7 +342,7 @@ contract DataForcesCoinDev is ERC223, Ownable {
     }
 
     /**
-     * @dev Function to check the amount of tokens that an owner allowed to a spender
+     * @dev Function to check the _amount of tokens that an owner allowed to a spender
      *      Added due to backwards compatibility with ERC20
      * @param _owner address The address which owns the funds
      * @param _spender address The address which will spend the funds
@@ -354,18 +354,18 @@ contract DataForcesCoinDev is ERC223, Ownable {
 
 
     /**
-     * @dev Burns a specific amount of tokens.
+     * @dev Burns a specific _amount of tokens.
      * @param _from The address that will burn the tokens.
-     * @param amount The amount (number) of token to be burned.
+     * @param _amount The int number of token to be burned.
      */
-    function burn(address _from, uint256 amount) onlyOwner public {
-        amount = amount.mul(1e18);
-        require(amount > 0
-                && balanceOf[_from] >= amount);
+    function burn(address _from, uint256 _amount) onlyOwner public {
+        _amount = _amount.mul(1e18);
+        require(_amount > 0
+                && balanceOf[_from] >= _amount);
 
-        balanceOf[_from] = balanceOf[_from].sub(amount);
-        totalSupply = totalSupply.sub(amount);
-        Burn(_from, amount);
+        balanceOf[_from] = balanceOf[_from].sub(_amount);
+        totalSupply = totalSupply.sub(_amount);
+        Burn(_from, _amount);
     }
 
 
@@ -377,16 +377,16 @@ contract DataForcesCoinDev is ERC223, Ownable {
     /**
      * @dev Function to mint tokens
      * @param _to The address that will receive the minted tokens.
-     * @param amount The amount(number) of tokens to mint.
+     * @param _amount The int number of tokens to mint.
      */
-    function mint(address _to, uint256 amount) onlyOwner canMint public returns (bool) {
-        amount = amount.mul(1e18);
-        require(amount > 0);
+    function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) {
+        _amount = _amount.mul(1e18);
+        require(_amount > 0);
 
-        totalSupply = totalSupply.add(amount);
-        balanceOf[_to] = balanceOf[_to].add(amount);
-        Mint(_to, amount);
-        Transfer(address(0), _to, amount);
+        totalSupply = totalSupply.add(_amount);
+        balanceOf[_to] = balanceOf[_to].add(_amount);
+        Mint(_to, _amount);
+        Transfer(address(0), _to, _amount);
         return true;
     }
 
@@ -402,57 +402,57 @@ contract DataForcesCoinDev is ERC223, Ownable {
 
 
     /**
-     * @dev Function to evenly distribute tokens to the list of addresses with equal amount
+     * @dev Function to evenly distribute tokens to the list of addresses with equal _amount
      * @param addresses The list of addresses used for receiving
-     * @param amount The amount(number) of token
+     * @param _value The decimal unit of token
      */
-    function evenAirdrop(address[] addresses, uint256 amount) public returns (bool) {
-        require(amount > 0
+    function evenAirdrop(address[] addresses, uint256 _value) public returns (bool) {
+        require(_value > 0
                 && addresses.length > 0
                 && frozenAccount[msg.sender] == false);
 
-        amount = amount.mul(1e18);
-        uint256 totalAmount = amount.mul(addresses.length);
-        require(balanceOf[msg.sender] >= totalAmount);
+        require(balanceOf[msg.sender] >= _value.mul(addresses.length));
 
         for (uint j = 0; j < addresses.length; j++) {
             require(addresses[j] != 0x0
+                    && msg.sender != addresses[j]
                     && frozenAccount[addresses[j]] == false);
 
-            balanceOf[addresses[j]] = balanceOf[addresses[j]].add(amount);
-            Transfer(msg.sender, addresses[j], amount);
+            balanceOf[addresses[j]] = balanceOf[addresses[j]].add(_value);
+            balanceOf[msg.sender] = balanceOf[msg.sender].sub(_value);
+            Transfer(msg.sender, addresses[j], _value);
         }
-        balanceOf[msg.sender] = balanceOf[msg.sender].sub(totalAmount);
+
         return true;
     }
 
     /**
      * @dev Function to unevenly distribute tokens to the list of addresses
      * @param addresses The list of addresses used for receiving
-     * @param amounts The corresponding amounts(number) of token
+     * @param _values The corresponding decimal unit of token
      */
-    function unevenAirdrop(address[] addresses, uint[] amounts) public returns (bool) {
+    function unevenAirdrop(address[] addresses, uint[] _values) public returns (bool) {
         require(addresses.length > 0
-                && addresses.length == amounts.length
+                && addresses.length == _values.length
                 && frozenAccount[msg.sender] == false);
 
-        uint256 totalAmount = 0;
+        uint256 total_value = 0;
 
         for(uint j = 0; j < addresses.length; j++){
-            require(amounts[j] > 0
-                    && addresses[j] != 0x0
-                    && frozenAccount[addresses[j]] == false);
-
-            amounts[j] = amounts[j].mul(1e18);
-            totalAmount = totalAmount.add(amounts[j]);
+            total_value = total_value.add(_values[j]);
         }
-        require(balanceOf[msg.sender] >= totalAmount);
+        require(balanceOf[msg.sender] >= total_value);
 
         for (j = 0; j < addresses.length; j++) {
-            balanceOf[addresses[j]] = balanceOf[addresses[j]].add(amounts[j]);
-            Transfer(msg.sender, addresses[j], amounts[j]);
+            require(_values[j] > 0
+                    && addresses[j] != 0x0
+                    && msg.sender != addresses[j]
+                    && frozenAccount[addresses[j]] == false);
+            balanceOf[addresses[j]] = balanceOf[addresses[j]].add(_values[j]);
+            balanceOf[msg.sender] = balanceOf[msg.sender].sub(_values[j]);
+            Transfer(msg.sender, addresses[j], _values[j]);
         }
-        balanceOf[msg.sender] = balanceOf[msg.sender].sub(totalAmount);
+
         return true;
     }
 
