@@ -2,7 +2,7 @@
 Smart contracts
 
 ## ERC223 contracts
-DFC-debug.sol
+- DFC-debug.sol
 
 ## ERC20 constracts
 - Token-s4-16-advanced.sol
